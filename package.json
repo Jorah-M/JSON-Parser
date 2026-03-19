@@ -1,0 +1,13 @@
+{
+  "name": "json-parser",
+  "version": "1.0.0",
+  "description": "Парсер текста в JSON с помощью OpenAI API",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "openai": "^4.47.1"
+  }
+}
