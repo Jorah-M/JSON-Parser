@@ -1,7 +1,7 @@
 {
   "name": "json-parser",
   "version": "1.0.0",
-  "description": "Парсер текста в JSON с помощью OpenAI API",
+  "description": "Парсер текста в JSON с помощью Groq API",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"

@@ -2,7 +2,14 @@
 require("dotenv").config();
 
 const fs = require("fs");
-const Groq = require("openai"); // Groq совместим с OpenAI SDK
+// Groq совместим с OpenAI SDK, поэтому используем тот же пакет
+const Groq = require("openai");
+
+// Проверяем наличие API ключа до любых запросов
+if (!process.env.GROQ_API_KEY) {
+  console.error("Ошибка: GROQ_API_KEY не найден. Создайте файл .env на основе .env.example.");
+  process.exit(1);
+}
 
 // Инициализируем клиент Groq
 const client = new Groq({
@@ -10,17 +17,22 @@ const client = new Groq({
   baseURL: "https://api.groq.com/openai/v1",
 });
 
-const INPUT_FILE = "input.txt";
-const OUTPUT_FILE = "output.json";
+// Входной файл — из аргумента CLI или input.txt по умолчанию
+const INPUT_FILE = process.argv[2] || "input.txt";
+
+// Выходной файл с временной меткой, чтобы не перезаписывать предыдущие результаты
+const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+const OUTPUT_FILE = `output_${timestamp}.json`;
 
 async function main() {
   // Читаем входной текст
   if (!fs.existsSync(INPUT_FILE)) {
-    console.error(`Файл ${INPUT_FILE} не найден.`);
+    console.error(`Файл "${INPUT_FILE}" не найден.`);
     process.exit(1);
   }
   const inputText = fs.readFileSync(INPUT_FILE, "utf-8").trim();
-  console.log("Входной текст прочитан. Отправляем в Groq...");
+  console.log(`Входной файл: ${INPUT_FILE}`);
+  console.log("Отправляем в Groq...\n");
 
   // Промпт просит вернуть валидный JSON со списком товаров
   const systemPrompt = `
@@ -57,9 +69,20 @@ async function main() {
     process.exit(1);
   }
 
-  // Сохраняем результат в output.json
+  // Сохраняем результат в output_<timestamp>.json
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(parsed, null, 2), "utf-8");
-  console.log(`Готово! Результат сохранён в ${OUTPUT_FILE}`);
+
+  // Выводим результат таблицей для наглядности
+  console.log("Результат:");
+  console.table(
+    parsed.items.map((item) => ({
+      Товар: item.name,
+      Количество: item.quantity,
+      Цена: item.price,
+    }))
+  );
+
+  console.log(`\nРезультат сохранён в ${OUTPUT_FILE}`);
 }
 
 main();
